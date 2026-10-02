@@ -1,0 +1,50 @@
+# Radar RPC (VPS) — API/PWA + cron de cosecha.
+#
+# Uso:
+#   docker compose up -d --build
+#   docker compose exec harvester python -m radar.harvester.cli --days 365 --max-articles 2500   # primera cosecha
+#
+# Para habilitar búsqueda semántica (BGE-M3, ~2 GB RAM), cambia el build arg
+# RADAR_HEAVY a 1 y vuelve a construir.
+
+services:
+  radar:
+    build:
+      context: .
+      args:
+        RADAR_HEAVY: "0"
+    image: radar-rpc:latest
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      RADAR_PORT: "8000"
+      RADAR_DATA_DIR: /data
+      RADAR_DB_PATH: /data/radar.db
+      RADAR_AUTO_HARVEST: "0"
+      RADAR_MAILTO: ${RADAR_MAILTO:-rpc@up.edu.mx}
+      # LLM en la nube (Groq u otro OpenAI-compatible). Sin esto, el socrático
+      # usa el LM Studio local si está accesible, o el fallback de plantillas.
+      RADAR_LLM_URL: ${RADAR_LLM_URL:-https://api.groq.com/openai/v1}
+      RADAR_LLM_MODEL: ${RADAR_LLM_MODEL:-llama-3.3-70b-versatile}
+      RADAR_LLM_API_KEY: ${RADAR_LLM_API_KEY:-}
+    volumes:
+      - radar-data:/data
+
+  # Contenedor de cosecha: se apaga solo. En el host programa el cron:
+  #   crontab -e
+  #   0 */6 * * * cd /opt/radar-obcc && /usr/bin/docker compose run --rm harvester >> /var/log/radar-harvest.log 2>&1
+  harvester:
+    image: radar-rpc:latest
+    profiles: ["cron"]
+    restart: "no"
+    environment:
+      RADAR_DATA_DIR: /data
+      RADAR_DB_PATH: /data/radar.db
+      RADAR_MAILTO: ${RADAR_MAILTO:-rpc@up.edu.mx}
+    volumes:
+      - radar-data:/data
+    command: ["python", "-m", "radar.harvester.cli", "--days", "30", "--max-articles", "1200"]
+
+volumes:
+  radar-data:

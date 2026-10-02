@@ -1,0 +1,62 @@
+# Blueprint de Render para Radar RPC (widget OJS + API).
+# Crea: Web Service (Docker), disco persistente y Cron Job de cosecha.
+# Docs: https://render.com/docs/blueprint-spec
+services:
+  - type: web
+    name: radar-rpc
+    runtime: docker
+    plan: starter            # sube a "standard" si usas RADAR_HEAVY=1 (torch)
+    region: oregon           # cambia a tu región más cercana
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: RADAR_PORT
+        value: 8000
+      - key: RADAR_DATA_DIR
+        value: /data
+      - key: RADAR_DB_PATH
+        value: /data/radar.db
+      - key: RADAR_AUTO_HARVEST
+        value: "0"            # la cosecha la hace el cron, no el scheduler interno
+      - key: RADAR_MAILTO
+        sync: false
+      - key: RADAR_HARVEST_INTERVAL_HOURS
+        value: "6"
+      # --- LLM en la nube (diálogo socrático 24/7, sin tu PC) ---
+      - key: RADAR_LLM_URL
+        value: https://api.groq.com/openai/v1
+      - key: RADAR_LLM_MODEL
+        value: llama-3.3-70b-versatile
+      - key: RADAR_LLM_API_KEY
+        sync: false            # define el valor en el panel de Render (secreto)
+      # Descomenta si construyes con RADAR_HEAVY=1 (semántica):
+      # - key: RADAR_HEAVY
+      #   value: "1"
+    disk:
+      name: radar-data
+      mountPath: /data
+      sizeGB: 5
+
+  - type: cron
+    name: radar-harvest
+    runtime: docker
+    plan: starter
+    region: oregon
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    schedule: "0 */6 * * *"   # cada 6 horas (UTC)
+    dockerCommand: >-
+      python -m radar.harvester.cli --days 30 --max-articles 1200
+    envVars:
+      - key: RADAR_DATA_DIR
+        value: /data
+      - key: RADAR_DB_PATH
+        value: /data/radar.db
+      - key: RADAR_MAILTO
+        sync: false
+    disk:
+      name: radar-data
+      mountPath: /data
+      sizeGB: 5

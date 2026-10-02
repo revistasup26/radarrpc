@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <title>Actualizando Radar RPC…</title>
+  <style>
+    body { font-family: system-ui, sans-serif; background: #F6F2EA; color: #1b2a4a;
+           display: flex; min-height: 100vh; align-items: center; justify-content: center; margin: 0; }
+    .box { background: #fff; border: 1px solid #e2dccf; border-radius: 16px; padding: 28px 32px;
+           max-width: 460px; text-align: center; box-shadow: 0 10px 30px rgba(15,23,42,.08); }
+    h1 { font-size: 1.15rem; color: #911D2F; margin: 0 0 8px; }
+    p { font-size: .92rem; line-height: 1.5; }
+    code { background: #f2eee5; padding: 2px 6px; border-radius: 6px; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h1>Actualizando Radar RPC…</h1>
+    <p id="msg">Limpiando caché y Service Worker antiguos. Serás redirigido automáticamente.</p>
+    <p><a id="go" href="/app/">Continuar al Radar →</a></p>
+  </div>
+  <script>
+    (async () => {
+      const msg = document.getElementById("msg");
+      try {
+        if ("serviceWorker" in navigator) {
+          const regs = await navigator.serviceWorker.getRegistrations();
+          await Promise.all(regs.map(r => r.unregister()));
+        }
+        if (window.caches) {
+          const keys = await caches.keys();
+          await Promise.all(keys.map(k => caches.delete(k)));
+        }
+        msg.textContent = "Listo. Cargando la versión nueva…";
+      } catch (e) {
+        msg.textContent = "No se pudo limpiar del todo, pero se cargará la versión nueva.";
+      }
+      setTimeout(() => location.replace("/app/?v=" + Date.now()), 700);
+    })();
+  </script>
+</body>
+</html>

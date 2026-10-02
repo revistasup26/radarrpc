@@ -1,0 +1,15 @@
+# Runtime
+data/*.db
+data/*.db-*
+data/*.log
+data/embeddings.npz
+data/embeddings_dois.json
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+.env
+probe_amapi.py
+.opencode/
+.pytest_cache/
+.DS_Store

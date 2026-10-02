@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#911D2F">
+  <meta name="description" content="Radar RPC: publicaciones en conversación con la Revista Panamericana de Comunicación.">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,400;1,500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <title>Radar RPC · Revista Panamericana de Comunicación</title>
+  <link rel="stylesheet" href="css/style.css?v=3.2">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo-rpc-wrap">
+        <img src="icons/logo-rpc-original.png" alt="Revista Panamericana de Comunicación" class="logo-rpc">
+      </div>
+      <div>
+        <h1>Radar <span>RPC</span></h1>
+        <p class="tagline">Revista Panamericana de Comunicación · «Deja que el paper te encuentre.»</p>
+      </div>
+    </div>
+    <div class="top-actions">
+      <button id="btn-open-socratic" class="btn btn-accent" title="Cuéntanos qué investigas y te recomendamos artículos">🎯 Cuéntanos qué investigas y te recomendamos artículos</button>
+      <span id="install-wrap" hidden>
+        <button id="btn-install" class="btn btn-accent">Instalar Radar</button>
+      </span>
+      <button id="btn-refresh" class="btn ghost" title="Actualizar feed">⟳ Actualizar</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="config card">
+      <div class="config-grid">
+        <div class="field keywords">
+          <label for="keywords">Palabras clave (separadas por coma)</label>
+          <input id="keywords" type="text" placeholder="comunicación política, desinformación… (separa con coma, punto y coma o guion)" list="kw-suggest">
+          <datalist id="kw-suggest"></datalist>
+        </div>
+        <div class="config-filters">
+          <div class="field field-langs">
+            <label>Idiomas</label>
+            <div class="chips" id="langs">
+              <label><input type="checkbox" value="es" checked> Español</label>
+              <label><input type="checkbox" value="pt" checked> Portugués</label>
+              <label><input type="checkbox" value="en"> English</label>
+            </div>
+          </div>
+          <div class="field field-sources">
+            <label>Fuentes</label>
+            <div class="chips" id="sources">
+              <label><input type="checkbox" value="scielo" checked> SciELO</label>
+              <label><input type="checkbox" value="crossref" checked> Crossref</label>
+              <label><input type="checkbox" value="openalex" checked> OpenAlex</label>
+              <label><input type="checkbox" value="redalyc" checked> Redalyc</label>
+            </div>
+          </div>
+          <div class="field field-select">
+            <label for="limit">Artículos</label>
+            <select id="limit">
+              <option value="5" selected>5</option>
+              <option value="10">10</option>
+              <option value="15">15</option>
+              <option value="20">20</option>
+            </select>
+          </div>
+          <div class="field field-select">
+            <label for="days">Ventana</label>
+            <select id="days">
+              <option value="90">3 meses</option>
+              <option value="180">6 meses</option>
+              <option value="365">1 año</option>
+              <option value="1095">3 años</option>
+              <option value="1825" selected>5 años</option>
+              <option value="3650">10 años</option>
+            </select>
+          </div>
+          <div class="field field-select">
+            <label for="sort">Ordenar por</label>
+            <select id="sort">
+              <option value="relevance" selected>Relevancia</option>
+              <option value="recent">Más recientes</option>
+              <option value="cited">Más citados</option>
+            </select>
+          </div>
+          <div class="field actions">
+            <button id="btn-cfp" class="btn ghost" title="Filtrar por el CFP vigente de RPC">◎ CFP vigente</button>
+            <button id="btn-pin" class="btn" title="Vigilar estas keywords: recibe alertas de nuevas publicaciones">📌 Anclar</button>
+            <button id="btn-apply" class="btn btn-primary">Aplicar</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Match Académico -->
+    <section class="card author-match-section" id="section-author-match">
+      <div class="match-head">
+        <div class="match-title-wrap">
+          <h2>Match académico</h2>
+          <span class="sub">Si has publicado en Revista Panamericana de Comunicación o tienes una línea activa, conecta con autores de las otras 144 revistas iberoamericanas que investigan lo mismo</span>
+        </div>
+        <div class="match-controls">
+          <select id="match-rpc-select" class="match-select">
+            <option value="">-- Elige tu artículo en RPC o escribe tu tema al lado --</option>
+          </select>
+          <input id="match-author-input" type="text" placeholder="O escribe tu nombre / línea de estudio..." class="match-input">
+          <button id="btn-find-matches" class="btn btn-primary">Buscar Pares</button>
+        </div>
+      </div>
+      <div id="match-cards-grid" class="match-cards-grid">
+        <div class="empty-match">Selecciona tu artículo de RPC o escribe tu tema para ver los autores afines en otras revistas.</div>
+      </div>
+    </section>
+
+    <section class="card watch">
+      <div class="watch-head">
+        <h2>📌 Radar anclado</h2>
+        <span class="sub">Alertas pasivas: papers que dialogan con RPC o coinciden con tus keywords ancladas.</span>
+        <button id="btn-notify" class="btn ghost">🔔 Activar notificaciones</button>
+      </div>
+      <div id="watch-list" class="watch-list"><span class="sub">Cargando…</span></div>
+    </section>
+
+    <section class="stats-row">
+      <div class="stat card"><span class="num" id="stat-articles">–</span><span class="lbl">artículos en catálogo</span></div>
+      <div class="stat card"><span class="num" id="stat-journals">–</span><span class="lbl">revistas cubiertas</span></div>
+      <div class="stat card"><span class="num" id="stat-feed">–</span><span class="lbl">alertas en el radar</span></div>
+    </section>
+
+    <section id="feed" class="feed" aria-live="polite">
+    </section>
+
+    <section class="card sources">
+      <h2>Estado de las fuentes</h2>
+      <div id="sources-status" class="sources-status"><span>Cargando…</span></div>
+    </section>
+
+    <section class="card emerging">
+      <h2>🚀 Autores emergentes</h2>
+      <p class="sub">Heurística del radar: primera publicación en catálogo dentro del último año y al menos 2 artículos. Útil para descubrir voces nuevas en Comunicación.</p>
+      <div id="authors-list" class="authors-list"><span class="sub">Cargando…</span></div>
+    </section>
+  </main>
+
+  <!-- Modal Socrático de Concertación Temática -->
+  <div id="socratic-modal" class="socratic-modal-backdrop" hidden>
+    <div class="socratic-modal-card">
+      <div class="modal-head">
+        <h3>🎯 Cuéntanos qué investigas y te recomendamos artículos</h3>
+        <button id="btn-close-socratic" class="btn ghost sm" title="Cerrar">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="socratic-step-1">
+          <p class="modal-intro">¿Qué estás investigando actualmente? Expresa tu objeto de estudio, problema o pregunta de investigación con tus propias palabras (sin preocuparte por palabras clave técnicas):</p>
+          <textarea id="socratic-input" class="socratic-textarea" rows="3" placeholder="Ejemplo: Me interesa cómo los algoritmos de recomendación en TikTok y YouTube reconfiguran el consumo informativo y la desinformación en jóvenes universitarios..."></textarea>
+          <div class="modal-actions">
+            <button id="btn-socratic-analyze" class="btn btn-primary">Comenzar Diálogo Socrático</button>
+          </div>
+        </div>
+        <div id="socratic-step-2" hidden>
+          <div class="socratic-dialogue-box">
+            <div id="socratic-engine-warning" class="engine-warning" hidden></div>
+            <div id="socratic-dialogue-log" class="socratic-dialogue-log"></div>
+            <span class="dialogue-turn" id="socratic-turn-badge"></span>
+            <div class="badge-field" id="socratic-field-badge"></div>
+            <p id="socratic-epistemic" class="socratic-reflection"></p>
+            <div class="finer-panel">
+              <h4>Avance FINER del diálogo</h4>
+              <div id="socratic-finer-panel" class="finer-grid"></div>
+            </div>
+            <div class="socratic-questions-wrap">
+              <h4>Preguntas para acotar tu horizonte:</h4>
+              <div id="socratic-questions-list"></div>
+            </div>
+            <p class="sub" id="socratic-density" style="margin-bottom:12px"></p>
+            <textarea id="socratic-reflection-input" class="socratic-textarea" rows="3" placeholder="Tu respuesta a estas preguntas (ej. Me interesa más la recepción que la producción; trabajaría con 3 ciudades y entrevistas)..."></textarea>
+            <div class="modal-actions">
+              <button id="btn-socratic-back" class="btn ghost">← Cambiar tema</button>
+              <button id="btn-socratic-next" class="btn cool">Responder y continuar →</button>
+              <button id="btn-socratic-concert" class="btn btn-primary">Concertar mi Radar</button>
+            </div>
+          </div>
+        </div>
+        <div id="socratic-step-3" hidden>
+          <div class="socratic-result-box">
+            <div class="success-icon">🎯</div>
+            <h4 id="socratic-result-title"></h4>
+            <p id="socratic-result-summary" class="result-summary"></p>
+            <div class="result-details">
+              <div><b>Descriptores concertados (ES/PT):</b> <span id="socratic-result-kws"></span></div>
+              <div style="margin-top:6px"><b>Revistas clave del catálogo:</b> <span id="socratic-result-journals"></span></div>
+              <div style="margin-top:6px"><b>Cierre FINER:</b> <span id="socratic-result-finer"></span></div>
+            </div>
+            <div class="modal-actions">
+              <button id="btn-socratic-pin" class="btn btn-accent">📌 Anclar y Activar este Radar</button>
+              <button id="btn-socratic-apply" class="btn btn-primary">Ver Publicaciones Ahora</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p><strong>Radar RPC</strong> — radar de publicaciones de interés para autores de la Revista Panamericana de Comunicación.</p>
+    <p class="sub">Conversación con el corpus RPC · CFP vigente · Embed OJS: <code>/app/embed.js</code> · <span id="ui-version">UI v3.2</span></p>
+  </footer>
+
+  <script src="js/app.js?v=3.2"></script>
+</body>
+</html>
